@@ -9,27 +9,178 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppMyPersonaRouteImport } from './routes/_app.my-persona'
+import { Route as AppJourneyRouteImport } from './routes/_app.journey'
+import { Route as AppCompassRouteImport } from './routes/_app.compass'
+import { Route as AppAskRouteImport } from './routes/_app.ask'
 
-export interface FileRoutesByFullPath {}
-export interface FileRoutesByTo {}
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMyPersonaRoute = AppMyPersonaRouteImport.update({
+  id: '/my-persona',
+  path: '/my-persona',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJourneyRoute = AppJourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCompassRoute = AppCompassRouteImport.update({
+  id: '/compass',
+  path: '/compass',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAskRoute = AppAskRouteImport.update({
+  id: '/ask',
+  path: '/ask',
+  getParentRoute: () => AppRoute,
+} as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof AppIndexRoute
+  '/ask': typeof AppAskRoute
+  '/compass': typeof AppCompassRoute
+  '/journey': typeof AppJourneyRoute
+  '/my-persona': typeof AppMyPersonaRoute
+  '/settings': typeof AppSettingsRoute
+}
+export interface FileRoutesByTo {
+  '/ask': typeof AppAskRoute
+  '/compass': typeof AppCompassRoute
+  '/journey': typeof AppJourneyRoute
+  '/my-persona': typeof AppMyPersonaRoute
+  '/settings': typeof AppSettingsRoute
+  '/': typeof AppIndexRoute
+}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_app': typeof AppRouteWithChildren
+  '/_app/ask': typeof AppAskRoute
+  '/_app/compass': typeof AppCompassRoute
+  '/_app/journey': typeof AppJourneyRoute
+  '/_app/my-persona': typeof AppMyPersonaRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: never
+  fullPaths:
+    | '/'
+    | '/ask'
+    | '/compass'
+    | '/journey'
+    | '/my-persona'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: never
-  id: '__root__'
+  to: '/ask' | '/compass' | '/journey' | '/my-persona' | '/settings' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/ask'
+    | '/_app/compass'
+    | '/_app/journey'
+    | '/_app/my-persona'
+    | '/_app/settings'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {}
+export interface RootRouteChildren {
+  AppRoute: typeof AppRouteWithChildren
 }
 
-const rootRouteChildren: RootRouteChildren = {}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/my-persona': {
+      id: '/_app/my-persona'
+      path: '/my-persona'
+      fullPath: '/my-persona'
+      preLoaderRoute: typeof AppMyPersonaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/journey': {
+      id: '/_app/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof AppJourneyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/compass': {
+      id: '/_app/compass'
+      path: '/compass'
+      fullPath: '/compass'
+      preLoaderRoute: typeof AppCompassRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ask': {
+      id: '/_app/ask'
+      path: '/ask'
+      fullPath: '/ask'
+      preLoaderRoute: typeof AppAskRouteImport
+      parentRoute: typeof AppRoute
+    }
+  }
+}
+
+interface AppRouteChildren {
+  AppAskRoute: typeof AppAskRoute
+  AppCompassRoute: typeof AppCompassRoute
+  AppJourneyRoute: typeof AppJourneyRoute
+  AppMyPersonaRoute: typeof AppMyPersonaRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAskRoute: AppAskRoute,
+  AppCompassRoute: AppCompassRoute,
+  AppJourneyRoute: AppJourneyRoute,
+  AppMyPersonaRoute: AppMyPersonaRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  AppRoute: AppRouteWithChildren,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
