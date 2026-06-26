@@ -9,6 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "./brand-logo";
 
 type NavItem = { label: string; to: string; icon: LucideIcon };
 
@@ -27,8 +28,8 @@ export function AppSidebar() {
   return (
     <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border bg-[color:var(--surface)]/60 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-2.5 px-6">
-        <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-secondary shadow-[0_4px_18px_-6px_var(--primary)]">
-          <span className="text-sm font-bold text-primary-foreground">P</span>
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-[color:var(--card)] border border-border shadow-[0_4px_18px_-6px_var(--primary)]">
+          <BrandLogo size={22} />
         </div>
         <div className="flex flex-col leading-tight">
           <span className="text-display text-[15px]">PersonaAI</span>
