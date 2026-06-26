@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { AppSidebar, MobileNav } from "@/components/app-sidebar";
 import { PersonaPanel } from "@/components/persona-panel";
+import { SplashScreen } from "@/components/splash-screen";
 import { Search, Command } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/_app")({
 function AppLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SplashScreen />
       {/* Ambient background glow */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 left-1/3 h-[480px] w-[480px] rounded-full bg-primary/10 blur-[120px]" />

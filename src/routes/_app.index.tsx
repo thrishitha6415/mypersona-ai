@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   Award,
-  FolderGit2,
-  Sparkles,
-  Briefcase,
-  Trophy,
-  Plus,
-  GraduationCap,
   Code2,
+  GraduationCap,
   Medal,
+  Plus,
+  Sparkles,
+  Target,
+  Flame,
+  Compass as CompassIcon,
 } from "lucide-react";
-import { StatCard } from "@/components/stat-card";
+import { InsightCard } from "@/components/insight-card";
 import { TimelineItem } from "@/components/timeline-item";
 import { CircularProgress } from "@/components/circular-progress";
 
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/_app/")({
   component: HomePage,
 });
 
-function greeting() {
+function computeGreeting() {
   const h = new Date().getHours();
   if (h < 12) return "Good Morning";
   if (h < 18) return "Good Afternoon";
@@ -32,47 +33,86 @@ function greeting() {
 }
 
 function HomePage() {
+  // Client-only — avoid SSR/CSR hydration mismatch on time-of-day greeting.
+  const [greeting, setGreeting] = useState("Welcome back");
+  useEffect(() => setGreeting(computeGreeting()), []);
+
   return (
-    <div className="mx-auto max-w-5xl space-y-12">
+    <div className="mx-auto max-w-5xl space-y-14">
       {/* Hero */}
-      <section className="pt-6">
-        <p className="text-sm font-medium text-muted-foreground">
-          {greeting()}, <span className="text-foreground">Thrishi</span>
+      <section className="pt-4">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-[color:var(--card)]/60 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur-md">
+          <span className="h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_8px_var(--success)]" />
+          Persona is listening
+        </div>
+        <p className="mt-5 text-sm font-medium text-muted-foreground">
+          {greeting}, <span className="text-foreground">Thrishi</span>
         </p>
-        <h1 className="mt-4 text-display text-4xl leading-[1.05] tracking-tight lg:text-5xl">
+        <h1 className="mt-3 text-display text-[44px] leading-[1.04] tracking-tight lg:text-[56px]">
           Know what you've done.
           <br />
-          <span className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-primary via-foreground to-secondary bg-clip-text text-transparent">
             Discover what's next.
           </span>
         </h1>
-        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
           Your intelligent workspace for understanding the journey behind your work — and the
           paths still open to you.
         </p>
 
-        <div className="mt-7 flex flex-wrap items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 hover:shadow-[0_10px_30px_-10px_var(--primary)]">
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-primary to-secondary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_36px_-12px_var(--primary)]">
             <Plus className="h-4 w-4" /> Add to Persona
           </button>
-          <button className="inline-flex items-center gap-2 rounded-xl border border-border bg-[color:var(--card)]/60 px-4 py-2.5 text-sm font-medium text-foreground/90 transition-all duration-200 hover:border-border-strong hover:bg-[color:var(--card)]">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-border bg-[color:var(--card)]/60 px-4 py-2.5 text-sm font-medium text-foreground/90 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:bg-[color:var(--card)]">
             View Journey
           </button>
         </div>
       </section>
 
-      {/* Stats */}
+      {/* AI Insight Cards */}
       <section>
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-display text-lg">Journey Overview</h2>
+          <div>
+            <h2 className="text-display text-lg">Persona insights</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Living signals, refreshed from your work this week.
+            </p>
+          </div>
           <p className="text-xs text-muted-foreground">Updated just now</p>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-          <StatCard label="Certificates" value={14} delta="2" icon={Award} tone="primary" />
-          <StatCard label="Projects" value={9} delta="3" icon={FolderGit2} tone="secondary" />
-          <StatCard label="Skills" value={32} delta="5" icon={Sparkles} tone="success" />
-          <StatCard label="Internships" value={2} icon={Briefcase} tone="warning" />
-          <StatCard label="Achievements" value={7} delta="1" icon={Trophy} tone="primary" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <InsightCard
+            icon={Sparkles}
+            label="Strongest Skill"
+            headline="Machine Learning"
+            detail="Top 12% of peers. Reinforced by 3 shipped projects and a specialization."
+            tone="primary"
+            progress={88}
+          />
+          <InsightCard
+            icon={Target}
+            label="Career Readiness"
+            headline="Internship-ready"
+            detail="Profile aligned to ML & data-science roles. 2 gaps to fill for senior fits."
+            tone="success"
+            progress={74}
+          />
+          <InsightCard
+            icon={CompassIcon}
+            label="Today's Focus"
+            headline="Document your NLP capstone"
+            detail="A short case study unlocks the next tier of recruiter signals."
+            tone="secondary"
+          />
+          <InsightCard
+            icon={Flame}
+            label="Learning Momentum"
+            headline="5-week streak"
+            detail="Consistency up 24%. Keep one deep-work block on Wednesdays."
+            tone="warning"
+            progress={62}
+          />
         </div>
       </section>
 
