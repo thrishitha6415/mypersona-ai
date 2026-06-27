@@ -14,6 +14,7 @@ import {
 import { InsightCard } from "@/components/insight-card";
 import { TimelineItem } from "@/components/timeline-item";
 import { CircularProgress } from "@/components/circular-progress";
+import { useProfile } from "@/hooks/use-profile";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -33,9 +34,11 @@ function computeGreeting() {
 }
 
 function HomePage() {
+  const { profile } = useProfile();
   // Client-only — avoid SSR/CSR hydration mismatch on time-of-day greeting.
   const [greeting, setGreeting] = useState("Welcome back");
   useEffect(() => setGreeting(computeGreeting()), []);
+  const name = profile?.full_name ?? "there";
 
   return (
     <div className="mx-auto max-w-5xl space-y-14">
@@ -46,7 +49,7 @@ function HomePage() {
           Persona is listening
         </div>
         <p className="mt-5 text-sm font-medium text-muted-foreground">
-          {greeting}, <span className="text-foreground">Thrishi</span>
+          {greeting}, <span className="text-foreground">{name}</span>
         </p>
         <h1 className="mt-3 text-display text-[44px] leading-[1.04] tracking-tight lg:text-[56px]">
           Know what you've done.

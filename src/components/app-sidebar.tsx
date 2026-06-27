@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home,
   UserCircle2,
@@ -6,10 +6,13 @@ import {
   Compass,
   Sparkles,
   Settings,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "./brand-logo";
+import { useProfile } from "@/hooks/use-profile";
+import { supabase } from "@/integrations/supabase/client";
 
 type NavItem = { label: string; to: string; icon: LucideIcon };
 
@@ -24,6 +27,16 @@ const NAV: NavItem[] = [
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { profile } = useProfile();
+  const navigate = useNavigate();
+  const displayName = profile?.full_name ?? "Welcome";
+  const initial = (displayName?.trim()?.[0] ?? "P").toUpperCase();
+  const headline = profile?.headline ?? "Student";
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }
 
   return (
     <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border bg-[color:var(--surface)]/60 backdrop-blur-xl">
@@ -84,12 +97,19 @@ export function AppSidebar() {
       <div className="m-3 rounded-2xl border border-border bg-[color:var(--card)] p-4">
         <div className="flex items-center gap-3">
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-sm font-semibold text-primary-foreground">
-            T
+            {initial}
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">Thrishi</p>
-            <p className="truncate text-xs text-muted-foreground">Student · IIT</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{displayName}</p>
+            <p className="truncate text-xs text-muted-foreground">{headline}</p>
           </div>
+          <button
+            onClick={signOut}
+            title="Sign out"
+            className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-[color:var(--surface)] hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </aside>
