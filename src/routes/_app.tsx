@@ -1,10 +1,16 @@
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { AppSidebar, MobileNav } from "@/components/app-sidebar";
 import { PersonaPanel } from "@/components/persona-panel";
 import { SplashScreen } from "@/components/splash-screen";
 import { Search, Command } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_app")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) throw redirect({ to: "/auth" });
+  },
   component: AppLayout,
 });
 

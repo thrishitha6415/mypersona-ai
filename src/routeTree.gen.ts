@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
@@ -17,6 +18,11 @@ import { Route as AppJourneyRouteImport } from './routes/_app.journey'
 import { Route as AppCompassRouteImport } from './routes/_app.compass'
 import { Route as AppAskRouteImport } from './routes/_app.ask'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -54,6 +60,7 @@ const AppAskRoute = AppAskRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/auth': typeof AuthRoute
   '/ask': typeof AppAskRoute
   '/compass': typeof AppCompassRoute
   '/journey': typeof AppJourneyRoute
@@ -61,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
 }
 export interface FileRoutesByTo {
+  '/auth': typeof AuthRoute
   '/ask': typeof AppAskRoute
   '/compass': typeof AppCompassRoute
   '/journey': typeof AppJourneyRoute
@@ -71,6 +79,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
   '/_app/ask': typeof AppAskRoute
   '/_app/compass': typeof AppCompassRoute
   '/_app/journey': typeof AppJourneyRoute
@@ -82,16 +91,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/ask'
     | '/compass'
     | '/journey'
     | '/my-persona'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/ask' | '/compass' | '/journey' | '/my-persona' | '/settings' | '/'
+  to:
+    | '/auth'
+    | '/ask'
+    | '/compass'
+    | '/journey'
+    | '/my-persona'
+    | '/settings'
+    | '/'
   id:
     | '__root__'
     | '/_app'
+    | '/auth'
     | '/_app/ask'
     | '/_app/compass'
     | '/_app/journey'
@@ -102,10 +120,18 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -180,6 +206,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
