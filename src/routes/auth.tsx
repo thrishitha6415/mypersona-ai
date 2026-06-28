@@ -24,13 +24,16 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  const [info, setInfo] = useState<string | null>(null);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setSubmitting(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -39,11 +42,16 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        if (!data.session) {
+          setInfo("Check your inbox to verify your email, then sign in.");
+          setMode("signin");
+          return;
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/" });
+      window.location.href = "/";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -104,9 +112,8 @@ function AuthPage() {
             className="w-full rounded-xl border border-border bg-[color:var(--card)]/60 px-4 py-2.5 text-sm focus:border-border-strong focus:outline-none"
             required
           />
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
-          )}
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          {info && <p className="text-xs text-success">{info}</p>}
           <button
             type="submit"
             disabled={submitting}
