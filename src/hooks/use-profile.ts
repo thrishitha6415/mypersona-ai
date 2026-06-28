@@ -1,42 +1,25 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { useAuth } from "./use-auth";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export function useProfile() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    async function load() {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user?.id;
-      if (!uid) {
-        if (active) {
-          setProfile(null);
-          setLoading(false);
-        }
-        return;
-      }
-      const { data } = await supabase
+  const { user } = useAuth();
+  const uid = user?.id;
+  const q = useQuery({
+    queryKey: ["profile", uid],
+    enabled: !!uid,
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", uid)
+        .eq("id", uid!)
         .maybeSingle();
-      if (active) {
-        setProfile(data ?? null);
-        setLoading(false);
-      }
-    }
-    load();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => load());
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
-
-  return { profile, loading };
+      if (error) throw error;
+      return (data ?? null) as Profile | null;
+    },
+  });
+  return { profile: q.data ?? null, loading: q.isLoading };
 }
