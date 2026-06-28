@@ -1,9 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "./use-auth";
 
-type Tables = Database["public"]["Tables"];
 export type TableName =
   | "skills"
   | "achievements"
@@ -15,7 +13,7 @@ export type TableName =
   | "journey_events"
   | "recommendations";
 
-export function useUserRows<T extends TableName>(table: T) {
+export function useUserRows<Row extends { id: string }>(table: TableName) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const uid = user?.id;
@@ -24,34 +22,31 @@ export function useUserRows<T extends TableName>(table: T) {
     queryKey: [table, uid],
     enabled: !!uid,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(table)
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Tables[T]["Row"][];
+      return (data ?? []) as Row[];
     },
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: [table, uid] });
 
   const insert = useMutation({
-    mutationFn: async (values: Partial<Tables[T]["Insert"]>) => {
+    mutationFn: async (values: Record<string, unknown>) => {
       if (!uid) throw new Error("Not signed in");
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(table)
-        .insert({ ...(values as object), user_id: uid } as Tables[T]["Insert"]);
+        .insert({ ...values, user_id: uid });
       if (error) throw error;
     },
     onSuccess: invalidate,
   });
 
   const update = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: Partial<Tables[T]["Update"]> }) => {
-      const { error } = await supabase
-        .from(table)
-        .update(values as Tables[T]["Update"])
-        .eq("id", id);
+    mutationFn: async ({ id, values }: { id: string; values: Record<string, unknown> }) => {
+      const { error } = await (supabase as any).from(table).update(values).eq("id", id);
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -59,11 +54,11 @@ export function useUserRows<T extends TableName>(table: T) {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(table).delete().eq("id", id);
+      const { error } = await (supabase as any).from(table).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: invalidate,
   });
 
-  return { ...query, rows: query.data ?? [], insert, update, remove };
+  return { ...query, rows: (query.data ?? []) as Row[], insert, update, remove };
 }
