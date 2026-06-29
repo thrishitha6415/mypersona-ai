@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useUserRows } from "@/hooks/use-user-data";
 import { EditProfileButton } from "@/components/edit-profile-dialog";
 import { CrudSection } from "@/components/crud-section";
+import { DocumentsUploader } from "@/components/documents-uploader";
 
 export const Route = createFileRoute("/_app/my-persona")({
   head: () => ({ meta: [{ title: "My Persona · PersonaAI" }] }),
