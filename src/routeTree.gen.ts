@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
@@ -18,6 +19,11 @@ import { Route as AppJourneyRouteImport } from './routes/_app.journey'
 import { Route as AppCompassRouteImport } from './routes/_app.compass'
 import { Route as AppAskRouteImport } from './routes/_app.ask'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -61,6 +67,7 @@ const AppAskRoute = AppAskRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
   '/ask': typeof AppAskRoute
   '/compass': typeof AppCompassRoute
   '/journey': typeof AppJourneyRoute
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
   '/ask': typeof AppAskRoute
   '/compass': typeof AppCompassRoute
   '/journey': typeof AppJourneyRoute
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
   '/_app/ask': typeof AppAskRoute
   '/_app/compass': typeof AppCompassRoute
   '/_app/journey': typeof AppJourneyRoute
@@ -92,6 +101,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/onboarding'
     | '/ask'
     | '/compass'
     | '/journey'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/onboarding'
     | '/ask'
     | '/compass'
     | '/journey'
@@ -110,6 +121,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/auth'
+    | '/onboarding'
     | '/_app/ask'
     | '/_app/compass'
     | '/_app/journey'
@@ -121,10 +133,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  OnboardingRoute: typeof OnboardingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -207,6 +227,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  OnboardingRoute: OnboardingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

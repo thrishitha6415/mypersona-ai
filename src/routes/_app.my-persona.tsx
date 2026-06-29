@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useUserRows } from "@/hooks/use-user-data";
 import { EditProfileButton } from "@/components/edit-profile-dialog";
 import { CrudSection } from "@/components/crud-section";
+import { DocumentsUploader } from "@/components/documents-uploader";
 
 export const Route = createFileRoute("/_app/my-persona")({
   head: () => ({ meta: [{ title: "My Persona · PersonaAI" }] }),
@@ -250,18 +251,8 @@ function MyPersona() {
         renderItem={(g) => ({ primary: g.title, secondary: `${g.progress}% · ${g.status}`, meta: g.target_date ?? undefined })}
       />
 
-      <CrudSection<{ id: string; title: string; doc_type: string | null; file_url: string | null }>
-        table="documents"
-        icon={FileText}
-        title="Documents"
-        emptyHint="No documents linked."
-        fields={[
-          { name: "title", label: "Title", required: true },
-          { name: "doc_type", label: "Type", placeholder: "resume, transcript, …" },
-          { name: "file_url", label: "File URL", type: "url" },
-        ]}
-        renderItem={(d) => ({ primary: d.title, secondary: d.file_url ?? undefined, tag: d.doc_type ?? undefined })}
-      />
+      <DocumentsUploader />
+
 
       {/* Learning interests */}
       <section className="surface-card p-6">
