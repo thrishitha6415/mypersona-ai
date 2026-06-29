@@ -10,6 +10,12 @@ export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarded")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    if (!profile || !profile.onboarded) throw redirect({ to: "/onboarding" });
   },
   component: AppLayout,
 });
