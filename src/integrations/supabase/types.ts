@@ -259,16 +259,21 @@ export type Database = {
           bio: string | null
           career_goal: string | null
           career_readiness: number | null
+          college: string | null
           created_at: string
+          degree: string | null
           dream_career: string | null
           full_name: string | null
           github_handle: string | null
+          graduation_year: number | null
           growth_areas: string[] | null
           headline: string | null
           id: string
           learning_interests: string[] | null
           linkedin_handle: string | null
+          onboarded: boolean
           resume_score: number | null
+          skills_summary: string | null
           strengths: string[] | null
           updated_at: string
         }
@@ -277,16 +282,21 @@ export type Database = {
           bio?: string | null
           career_goal?: string | null
           career_readiness?: number | null
+          college?: string | null
           created_at?: string
+          degree?: string | null
           dream_career?: string | null
           full_name?: string | null
           github_handle?: string | null
+          graduation_year?: number | null
           growth_areas?: string[] | null
           headline?: string | null
           id: string
           learning_interests?: string[] | null
           linkedin_handle?: string | null
+          onboarded?: boolean
           resume_score?: number | null
+          skills_summary?: string | null
           strengths?: string[] | null
           updated_at?: string
         }
@@ -295,16 +305,21 @@ export type Database = {
           bio?: string | null
           career_goal?: string | null
           career_readiness?: number | null
+          college?: string | null
           created_at?: string
+          degree?: string | null
           dream_career?: string | null
           full_name?: string | null
           github_handle?: string | null
+          graduation_year?: number | null
           growth_areas?: string[] | null
           headline?: string | null
           id?: string
           learning_interests?: string[] | null
           linkedin_handle?: string | null
+          onboarded?: boolean
           resume_score?: number | null
+          skills_summary?: string | null
           strengths?: string[] | null
           updated_at?: string
         }
