@@ -248,8 +248,9 @@ ${JSON.stringify(ctx, null, 2)}` },
     const recs = parsed?.recommendations ?? [];
     if (recs.length === 0) throw new Error("No recommendations generated");
 
-    // Replace existing AI-generated recs (keep manual ones)
-    await supabase.from("recommendations").delete().eq("user_id", userId).eq("source", "ai");
+    const sb: any = supabase;
+    // Replace existing recs so re-generation stays fresh
+    await sb.from("recommendations").delete().eq("user_id", userId);
 
     const rows = recs.map((r) => ({
       user_id: userId,
@@ -260,15 +261,8 @@ ${JSON.stringify(ctx, null, 2)}` },
       link: r.link ?? null,
       priority: Number(r.priority) || 5,
       is_dismissed: false,
-      source: "ai" as const,
     }));
-    // "source" column may not exist; fall back gracefully
-    const ins = await supabase.from("recommendations").insert(rows);
-    if (ins.error) {
-      // retry without source
-      const clean = rows.map(({ source: _s, ...rest }) => rest);
-      await supabase.from("recommendations").insert(clean);
-    }
+    await sb.from("recommendations").insert(rows);
 
     return { count: rows.length };
   });
