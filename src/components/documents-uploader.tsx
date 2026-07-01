@@ -126,6 +126,7 @@ export function DocumentsUploader() {
       </div>
 
       {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
+      {notice && <p className="mt-3 text-xs text-success">{notice}</p>}
 
       <div className="mt-5">
         {isLoading ? (
