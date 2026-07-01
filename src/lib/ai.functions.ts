@@ -114,52 +114,53 @@ Empty arrays are OK. Omit fields you cannot infer.`,
     }).eq("id", doc.id);
 
     // Insert extracted rows. Best-effort; ignore individual failures.
+    const sb: any = supabase;
     const inserts: Promise<unknown>[] = [];
 
     for (const s of parsed.skills ?? []) {
       if (!s) continue;
-      inserts.push(supabase.from("skills").insert({
+      inserts.push(Promise.resolve(sb.from("skills").insert({
         user_id: userId, name: String(s).slice(0, 80), level: 60,
-      }));
+      })));
     }
     for (const p of parsed.projects ?? []) {
       if (!p?.title) continue;
-      inserts.push(supabase.from("projects").insert({
+      inserts.push(Promise.resolve(sb.from("projects").insert({
         user_id: userId, title: p.title, description: p.description ?? null,
         tags: p.tags ?? null,
-      }));
+      })));
     }
     for (const c of parsed.certifications ?? []) {
       if (!c?.name) continue;
-      inserts.push(supabase.from("certificates").insert({
+      inserts.push(Promise.resolve(sb.from("certificates").insert({
         user_id: userId, name: c.name, issuer: c.issuer ?? null,
         issued_on: normDate(c.issued_on), document_id: doc.id,
-      }));
+      })));
     }
     for (const i of parsed.internships ?? []) {
       if (!i?.role || !i?.company) continue;
-      inserts.push(supabase.from("internships").insert({
+      inserts.push(Promise.resolve(sb.from("internships").insert({
         user_id: userId, role: i.role, company: i.company,
         start_date: normDate(i.start_date), end_date: normDate(i.end_date),
         description: i.description ?? null,
-      }));
+      })));
     }
     for (const a of parsed.achievements ?? []) {
       if (!a?.title) continue;
-      inserts.push(supabase.from("achievements").insert({
+      inserts.push(Promise.resolve(sb.from("achievements").insert({
         user_id: userId, title: a.title, description: a.description ?? null,
         achieved_on: normDate(a.achieved_on),
-      }));
+      })));
     }
 
     // Journey event
-    inserts.push(supabase.from("journey_events").insert({
+    inserts.push(Promise.resolve(sb.from("journey_events").insert({
       user_id: userId,
       title: `Analyzed: ${doc.title}`,
       description: parsed.summary ?? null,
       category: parsed.category ?? "document",
       occurred_on: new Date().toISOString().slice(0, 10),
-    }));
+    })));
 
     await Promise.allSettled(inserts);
 
