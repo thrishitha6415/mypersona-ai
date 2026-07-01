@@ -22,9 +22,13 @@ export function DocumentsUploader() {
   const { user } = useAuth();
   const { rows, isLoading, insert, remove } = useUserRows<DocRow>("documents");
   const [busy, setBusy] = useState(false);
+  const [analyzing, setAnalyzing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [docType, setDocType] = useState<"resume" | "certificate" | "other">("resume");
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const analyze = useServerFn(analyzeDocument);
+  const qc = useQueryClient();
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -32,6 +36,7 @@ export function DocumentsUploader() {
     if (!file || !user) return;
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       const path = `${user.id}/${docType}-${Date.now()}-${file.name}`;
       const up = await supabase.storage
@@ -56,6 +61,23 @@ export function DocumentsUploader() {
     }
   }
 
+  async function onAnalyze(row: DocRow) {
+    setAnalyzing(row.id);
+    setError(null);
+    setNotice(null);
+    try {
+      const res = await analyze({ data: { documentId: row.id } });
+      const ex = res.extracted;
+      setNotice(`Extracted ${ex.skills?.length ?? 0} skills, ${ex.projects?.length ?? 0} projects, ${ex.certifications?.length ?? 0} certs.`);
+      // Refresh all impacted lists
+      qc.invalidateQueries();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Analysis failed");
+    } finally {
+      setAnalyzing(null);
+    }
+  }
+
   async function onDelete(row: DocRow) {
     if (!confirm(`Delete "${row.title}"?`)) return;
     if (row.storage_path) {
@@ -63,6 +85,7 @@ export function DocumentsUploader() {
     }
     await remove.mutateAsync(row.id);
   }
+
 
   return (
     <section className="surface-card p-6">
