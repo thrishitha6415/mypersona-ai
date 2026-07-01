@@ -1,14 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Sparkles, Target, Briefcase, FileText, Github, Linkedin, BookOpen, Heart, Zap, TrendingUp,
-  CheckCircle2, Award, Code2, GraduationCap, Medal,
+  CheckCircle2, Award, Code2, GraduationCap, Medal, Loader2,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { CircularProgress } from "@/components/circular-progress";
 import { useProfile } from "@/hooks/use-profile";
 import { useUserRows } from "@/hooks/use-user-data";
 import { EditProfileButton } from "@/components/edit-profile-dialog";
 import { CrudSection } from "@/components/crud-section";
 import { DocumentsUploader } from "@/components/documents-uploader";
+import { generatePersona } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_app/my-persona")({
   head: () => ({ meta: [{ title: "My Persona · PersonaAI" }] }),
