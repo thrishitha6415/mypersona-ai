@@ -158,8 +158,10 @@ Empty arrays are OK. Omit fields you cannot infer.`,
       user_id: userId,
       title: `Analyzed: ${doc.title}`,
       description: parsed.summary ?? null,
-      category: parsed.category ?? "document",
-      occurred_on: new Date().toISOString().slice(0, 10),
+      event_type: parsed.category ?? "document",
+      event_date: new Date().toISOString().slice(0, 10),
+      ref_table: "documents",
+      ref_id: doc.id,
     })));
 
     await Promise.allSettled(inserts);
