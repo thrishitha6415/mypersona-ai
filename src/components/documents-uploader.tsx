@@ -156,6 +156,15 @@ export function DocumentsUploader() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => onAnalyze(row)}
+                    disabled={analyzing === row.id}
+                    className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 disabled:opacity-60"
+                    title="Analyze with AI"
+                  >
+                    {analyzing === row.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    {analyzing === row.id ? "Analyzing…" : "Analyze"}
+                  </button>
                   {row.file_url && (
                     <a
                       href={row.file_url}
