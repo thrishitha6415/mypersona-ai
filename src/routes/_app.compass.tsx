@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Compass, ExternalLink, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Compass, ExternalLink, Sparkles, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUserRows } from "@/hooks/use-user-data";
 import { CrudSection } from "@/components/crud-section";
+import { generateCompass } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_app/compass")({
   head: () => ({ meta: [{ title: "Compass · PersonaAI" }] }),
@@ -31,18 +35,40 @@ const CATEGORIES = [
 function CompassPage() {
   const { rows } = useUserRows<Reco>("recommendations");
   const active = rows.filter((r) => !r.is_dismissed);
+  const gen = useServerFn(generateCompass);
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onGenerate() {
+    setBusy(true); setErr(null);
+    try { await gen({}); qc.invalidateQueries({ queryKey: ["recommendations"] }); }
+    catch (e) { setErr(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  }
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 animate-fade-in">
-      <header>
-        <div className="inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          <Compass className="h-3.5 w-3.5 text-primary" /> Compass
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            <Compass className="h-3.5 w-3.5 text-primary" /> Compass
+          </div>
+          <h1 className="mt-2 text-display text-3xl tracking-tight lg:text-4xl">Your guidance center.</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            AI-personalized roadmap based on your profile, skills, and goals.
+          </p>
         </div>
-        <h1 className="mt-2 text-display text-3xl tracking-tight lg:text-4xl">Your guidance center.</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Save recommended skills, projects, opportunities, and courses you want to pursue.
-        </p>
+        <button
+          onClick={onGenerate}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-xs font-semibold text-primary hover:bg-primary/20 disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {busy ? "Generating…" : "Generate roadmap"}
+        </button>
       </header>
+      {err && <p className="text-xs text-destructive">{err}</p>}
 
       {active.length === 0 ? (
         <div className="surface-card p-10 text-center">

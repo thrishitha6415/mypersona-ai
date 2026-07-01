@@ -1,14 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Sparkles, Target, Briefcase, FileText, Github, Linkedin, BookOpen, Heart, Zap, TrendingUp,
-  CheckCircle2, Award, Code2, GraduationCap, Medal,
+  CheckCircle2, Award, Code2, GraduationCap, Medal, Loader2,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { CircularProgress } from "@/components/circular-progress";
 import { useProfile } from "@/hooks/use-profile";
 import { useUserRows } from "@/hooks/use-user-data";
 import { EditProfileButton } from "@/components/edit-profile-dialog";
 import { CrudSection } from "@/components/crud-section";
 import { DocumentsUploader } from "@/components/documents-uploader";
+import { generatePersona } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_app/my-persona")({
   head: () => ({ meta: [{ title: "My Persona · PersonaAI" }] }),
@@ -20,6 +24,10 @@ type Skill = { id: string; name: string; level: number; is_top: boolean };
 function MyPersona() {
   const { profile, loading } = useProfile();
   const { rows: skills } = useUserRows<Skill>("skills");
+  const genPersona = useServerFn(generatePersona);
+  const qc = useQueryClient();
+  const [genBusy, setGenBusy] = useState(false);
+  const [genErr, setGenErr] = useState<string | null>(null);
 
   const name = profile?.full_name ?? "Your Persona";
   const headline = profile?.headline ?? "Add a headline to your profile";
@@ -30,6 +38,17 @@ function MyPersona() {
   const strengths = profile?.strengths ?? [];
   const growth = profile?.growth_areas ?? [];
   const interests = profile?.learning_interests ?? [];
+
+  async function onGenerate() {
+    setGenBusy(true); setGenErr(null);
+    try {
+      await genPersona({});
+      qc.invalidateQueries();
+    } catch (e) {
+      setGenErr(e instanceof Error ? e.message : "Failed to generate");
+    } finally { setGenBusy(false); }
+  }
+
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 animate-fade-in">
@@ -50,8 +69,19 @@ function MyPersona() {
             <p className="mt-1 text-sm text-muted-foreground">{headline}</p>
           </div>
         </div>
-        <EditProfileButton />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onGenerate}
+            disabled={genBusy}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-2 text-xs font-semibold text-primary hover:bg-primary/20 disabled:opacity-60"
+          >
+            {genBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {genBusy ? "Generating…" : "Generate with AI"}
+          </button>
+          <EditProfileButton />
+        </div>
       </header>
+      {genErr && <p className="text-xs text-destructive -mt-4">{genErr}</p>}
 
       {/* AI Summary */}
       <section className="relative overflow-hidden rounded-2xl border border-border bg-[color:var(--card)]/70 p-6 backdrop-blur-xl">

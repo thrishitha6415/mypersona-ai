@@ -1,8 +1,11 @@
 import { useRef, useState } from "react";
-import { FileText, Upload, Trash2, ExternalLink } from "lucide-react";
+import { FileText, Upload, Trash2, ExternalLink, Sparkles, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRows } from "@/hooks/use-user-data";
+import { analyzeDocument } from "@/lib/ai.functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 type DocRow = {
   id: string;
@@ -19,9 +22,13 @@ export function DocumentsUploader() {
   const { user } = useAuth();
   const { rows, isLoading, insert, remove } = useUserRows<DocRow>("documents");
   const [busy, setBusy] = useState(false);
+  const [analyzing, setAnalyzing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [docType, setDocType] = useState<"resume" | "certificate" | "other">("resume");
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const analyze = useServerFn(analyzeDocument);
+  const qc = useQueryClient();
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -29,6 +36,7 @@ export function DocumentsUploader() {
     if (!file || !user) return;
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       const path = `${user.id}/${docType}-${Date.now()}-${file.name}`;
       const up = await supabase.storage
@@ -53,6 +61,23 @@ export function DocumentsUploader() {
     }
   }
 
+  async function onAnalyze(row: DocRow) {
+    setAnalyzing(row.id);
+    setError(null);
+    setNotice(null);
+    try {
+      const res = await analyze({ data: { documentId: row.id } });
+      const ex = res.extracted;
+      setNotice(`Extracted ${ex.skills?.length ?? 0} skills, ${ex.projects?.length ?? 0} projects, ${ex.certifications?.length ?? 0} certs.`);
+      // Refresh all impacted lists
+      qc.invalidateQueries();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Analysis failed");
+    } finally {
+      setAnalyzing(null);
+    }
+  }
+
   async function onDelete(row: DocRow) {
     if (!confirm(`Delete "${row.title}"?`)) return;
     if (row.storage_path) {
@@ -60,6 +85,7 @@ export function DocumentsUploader() {
     }
     await remove.mutateAsync(row.id);
   }
+
 
   return (
     <section className="surface-card p-6">
@@ -100,6 +126,7 @@ export function DocumentsUploader() {
       </div>
 
       {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
+      {notice && <p className="mt-3 text-xs text-success">{notice}</p>}
 
       <div className="mt-5">
         {isLoading ? (
@@ -130,6 +157,15 @@ export function DocumentsUploader() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => onAnalyze(row)}
+                    disabled={analyzing === row.id}
+                    className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 disabled:opacity-60"
+                    title="Analyze with AI"
+                  >
+                    {analyzing === row.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    {analyzing === row.id ? "Analyzing…" : "Analyze"}
+                  </button>
                   {row.file_url && (
                     <a
                       href={row.file_url}
