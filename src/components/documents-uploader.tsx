@@ -1,8 +1,11 @@
 import { useRef, useState } from "react";
-import { FileText, Upload, Trash2, ExternalLink } from "lucide-react";
+import { FileText, Upload, Trash2, ExternalLink, Sparkles, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRows } from "@/hooks/use-user-data";
+import { analyzeDocument } from "@/lib/ai.functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 type DocRow = {
   id: string;
