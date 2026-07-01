@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Compass, ExternalLink, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Compass, ExternalLink, Sparkles, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUserRows } from "@/hooks/use-user-data";
 import { CrudSection } from "@/components/crud-section";
+import { generateCompass } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_app/compass")({
   head: () => ({ meta: [{ title: "Compass · PersonaAI" }] }),
